@@ -30,9 +30,23 @@ def init_jobs(config: SimpleNamespace):
     scheduler = BackgroundScheduler()
 
     for i, r in enumerate(config.rules):
+        # Hours are required
+        if not hasattr(r, 'hours'):
+            print(f"Rule Error: Rule {r.name} is missing property 'hours'.")
+            continue
+
+        # Mins are optional
+        mins = '0'
+        if hasattr(r, 'mins'):
+            mins = r.mins
+
         # Set cron
-        t = CronTrigger.from_crontab(f'0 {r.hours} * * *')
-        t.jitter = 600
+        t = CronTrigger.from_crontab(f'{mins} {r.hours} * * *')
+
+        if hasattr(config, 'scheduler'):
+            if hasattr(config.scheduler, 'spreadtime'):
+                if isinstance(config.scheduler.spreadtime, int):
+                    t.jitter = config.scheduler.spreadtime
 
         # Schedule
         scheduler.add_job(fetch_price, t, name=r.name, kwargs={'rule': r, 'config': config, 'idx': i})
