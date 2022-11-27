@@ -2,9 +2,10 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 from worker import fetch_price
 
+from apscheduler.schedulers.base import STATE_RUNNING
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.job import Job 
+from apscheduler.job import Job
 
 # Suppress timezone warnings
 import warnings
@@ -19,6 +20,10 @@ scheduler = BackgroundScheduler()
 
 
 def init_jobs(config: SimpleNamespace):
+    
+    if scheduler.state == STATE_RUNNING:
+        scheduler.shutdown(wait=True)
+        
     scheduler.remove_all_jobs()
 
     for i, r in enumerate(config.rules):
