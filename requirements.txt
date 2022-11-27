@@ -1,5 +1,5 @@
 APScheduler==3.9.1.post1
-azure_storage==0.37.0
+azure-data-tables==12.4.1
 beautifulsoup4==4.11.1
 Flask==2.2.2
 PyYAML==6.0
