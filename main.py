@@ -12,7 +12,7 @@ def main():
     scheduler.init_jobs(cfg)
 
     print('Running...')
-    webapp().run("0.0.0.0", 6900, debug=False)
+    webapp().run("0.0.0.0", 9600, debug=False)
 
     # Not needed since the webserver spins itself
     # while True:
