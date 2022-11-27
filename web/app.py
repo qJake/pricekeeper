@@ -1,3 +1,6 @@
+from scheduler import get_jobs, run_now, init_jobs
+from datastore import get_price_summary, get_price_history
+from config_reader import read_config
 import json
 import os
 import sys
@@ -12,15 +15,17 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from config_reader import read_config
-from datastore import get_price_summary, get_price_history
-from scheduler import get_jobs, run_now, init_jobs
 
-APP_VERSION = '1.2'
+APP_VERSION = '1.3'
+
 
 def webapp():
 
     app = Flask(__name__)
+
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
 
     @app.route("/")
     def home():
@@ -32,7 +37,6 @@ def webapp():
             'nav': 'home'
         }
         return render_template("index.html", context=vm)
-
 
     @app.route("/graph")
     def graph():
@@ -51,13 +55,17 @@ def webapp():
 
     @app.route("/refresh")
     def refresh():
+        print('Running all jobs now...')
         run_now()
+        print('Completed.')
         return redirect("/")
 
     @app.route("/reload")
     def reload():
+        print('Reloading config...')
         config = read_config()
         init_jobs(config)
+        print(f'Reloaded {len(config.rules)} rule(s).')
         return redirect("/")
 
     @app.route("/jobs")
@@ -81,7 +89,6 @@ def webapp():
     @app.route("/_health")
     def healthCheck():
         return render_template("_health.html")
-
 
     def get_vm(name: str = None) -> Tuple[SimpleNamespace, dict]:
         config = read_config()
