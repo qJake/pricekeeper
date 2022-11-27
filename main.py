@@ -4,8 +4,6 @@ import time
 from config_reader import read_config
 from web.app import webapp
 
-APP_VERSION = '1.0'
-
 
 def main():
     print('')

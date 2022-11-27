@@ -12,10 +12,11 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from main import APP_VERSION
 from config_reader import read_config
 from datastore import get_price_summary, get_price_history
 from scheduler import get_jobs, run_now, init_jobs
+
+APP_VERSION = '1.0'
 
 def webapp():
 
