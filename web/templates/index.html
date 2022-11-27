@@ -1,21 +1,30 @@
 {% extends "_layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sortable/0.8.0/css/sortable-theme-bootstrap.css" integrity="sha512-ejAo3nK8bdfwg68A9g6QYUdqnTmcGem1OX8AeVwa+dQH2v22vEwPkbZQzltTE+bjXt72iGvglAw0h+Up+fOg0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sortable/0.8.0/js/sortable.min.js" integrity="sha512-DEcSaL0BWApJ//v7ZfqAI04nvK+NQcUVwrrx/l1x7OJgU0Cwbq7e459NBMzLPrm8eLPzAwBtiJJS4AvLZDZ8xA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}
+
 {% block body %}
 
-        <table class="table">
-            <thead>
+    <table class="table sortable-theme-bootstrap" data-sortable>
+        <thead>
+            <tr>
+                <th>Last Price</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in context.prices | sort(attribute='name') %}
                 <tr>
-                    <th>Last Price</th>
-                    <th>Name</th>
+                    <td>{{ "$%.2f" | format(r.price) }}</td>
+                    <td>{{ r.name }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for r in context.prices | sort(attribute='name') %}
-                    <tr>
-                        <td>{{ "$%.2f" | format(r.price) }}</td>
-                        <td>{{ r.name }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            {% endfor %}
+        </tbody>
+    </table>
 
 {% endblock %}
