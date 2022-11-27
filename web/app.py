@@ -16,7 +16,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-APP_VERSION = '1.7'
+APP_VERSION = '1.8'
 
 
 def webapp():
