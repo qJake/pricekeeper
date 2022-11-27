@@ -1,0 +1,29 @@
+{% extends "_layout.html" %}
+{% block body %}
+
+    <h2>Scheduled Jobs</h2>
+
+    <div class="col-8">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Next Run</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for j in context.jobs %}
+                    <tr>
+                        <td>
+                            {{ j.next.strftime("%b %d, %Y %I:%M:%S %p") }}<br />
+                            <small>in {{ (j.delta.seconds / 3600) | round(0, 'floor') | int }} hours,
+                                {{ ((j.delta.seconds / 60) % 60) | round(0, 'floor') | int }} mins,
+                                {{ (j.delta.seconds % 60) | round(0, 'floor') | int }} secs</small>
+                        </td>
+                        <td>{{ j.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

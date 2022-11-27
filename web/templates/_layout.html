@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        {% block head %}{% endblock %}
+    </head>
+
+    <body>
+        <nav class="navbar navbar-expand-lg bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand text-bg-dark" href="#">PriceKeeper</a>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="text-bg-dark nav-link{{ ' active' if context.nav == 'home' else '' }}" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="text-bg-dark nav-link{{ ' active' if context.nav == 'jobs' else '' }}" href="/jobs">Jobs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="text-bg-dark nav-link" href="/refresh">Refresh Now</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container-fluid main mt-2">
+            <div class="row">
+                {% set leftClass = "col-3" %}
+                {% set rightClass = "col-9" %}
+
+                {% if nonav %}
+                    {% set leftClass = "d-none" %}
+                    {% set rightClass = "col" %}
+                {% endif %}
+
+                <div class="{{ leftClass }}">
+                    {% include "_nav.html" %}
+                </div>
+                <div class="{{ rightClass }}">
+                    {% block body required %}{% endblock %}
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.9.0/date_fns.min.js" integrity="sha512-ToehgZGJmTS39fU8sfP9/f0h2Zo6OeXXKgpdEgzqUtPfE5By1K/ZkD8Jtp5PlfdaWfGVx+Jw5j10h63wSwM1HA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js" integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/2.0.1/chartjs-adapter-date-fns.min.js" integrity="sha512-UCKLPV4d+5cU+ORDS/CVsod+2aGKg3B0mFw72HvxnS26Z3Rx78R9I2XL4DLYtBWnn9Zv3R5Dygw9W0VsFDwRlw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        {% block scripts %}{% endblock %}
+    </body>
+</html>

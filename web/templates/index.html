@@ -1,0 +1,21 @@
+{% extends "_layout.html" %}
+{% block body %}
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Last Price</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in context.prices %}
+                    <tr>
+                        <td>{{ "$%.2f" | format(r.price) }}</td>
+                        <td>{{ r.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+{% endblock %}

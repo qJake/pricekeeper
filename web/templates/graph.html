@@ -1,0 +1,91 @@
+{% extends "_layout.html" %}
+
+{% block scripts %}
+<script>
+    var chartData = {{ context.priceJson | safe }};
+    new Chart(document.getElementById('price-chart'), {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'Price',
+                    data: chartData,
+                    borderColor: '#00CC00',
+                    fill: '#00CC00'
+                }
+            ]
+        },
+        options: {
+            plugins:{
+                legend: {
+                    display: false
+                }
+            },
+            parsing: {
+                xAxisKey: 'x',
+                yAxisKey: 'y'
+            },
+            scales: {
+                y: {
+                    min: 0,
+                    offset: true,
+                    title: {
+                        display: true,
+                        text: 'Price (USD)'
+                    },
+                    ticks: {
+                        callback: function(value, index, ticks) {
+                            return '$' + value;
+                        }
+                    }
+                },
+                x: {
+                    type: 'timeseries',
+                    display: true,
+                    title: {
+                      display: true,
+                      text: 'Date'
+                    },
+                    time: {
+                        parser: "yyyy-MM-dd HH:mm:ss",
+                        tooltipFormat: "ddd MMM D, YYYY h:mma",
+                        displayFormats: {
+                            millisecond: 'h:mm:ss.SSSa',
+                            second: 'h:mm:ssa',
+                            minute: 'h:mma',
+                            hour: 'ha',
+                            day: 'MMM D',
+                            week: 'MMM D',
+                            month: 'MMM YYYY',
+                            year: 'MMM YYYY'
+
+                        }
+                    },
+                    ticks: {
+                        major: {
+                            enabled: true
+                        },
+                        color: (context) => context.tick && context.tick.major && '#003399',
+                        font: function(context) {
+                            if (context.tick && context.tick.major) {
+                                return {
+                                    weight: 'bold'
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+</script>
+{% endblock %}
+
+{% block body %}
+
+        <h3>Graph for: {{ context.name }}</h3>
+        <div class="chart-container">
+            <canvas id="price-chart"></canvas>
+        </div>
+
+{% endblock %}

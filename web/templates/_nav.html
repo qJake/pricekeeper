@@ -1,0 +1,14 @@
+{% for cat in context.categories %}
+    <div class="mb-2 d-flex flex-column align-items-stretch">
+        <button type="button" class="text-start btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#cat-{{ cat }}">
+            {{ cat }}
+        </button>
+        <nav id="cat-{{ cat }}" class="collapse {{ 'show' if context.activeCategory == cat else '' }} list-group">
+            {% for rule in context.config.rules | sort(attribute='name') %}{% if rule.category == cat %}
+                <a class="list-group-item{{ ' active' if context.name == rule.name else '' }}" href="/graph?name={{ rule.name }}">
+                    {{ rule.name }}
+                </a>
+            {% endif %}{% endfor %}
+        </nav>
+    </div>
+{% endfor %}

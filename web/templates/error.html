@@ -1,0 +1,15 @@
+{% set nonav = True %}
+{% extends "_layout.html" %}
+
+{% block body %}
+    <div class="text-center">
+        <h2>Oops!</h2>
+        <h3>An error occurred. :(</h3>
+        {% if context.message %}
+            <p>{{ context.message }}</p>
+        {% endif %}
+        <p>
+            <a href="/">Home</a>
+        </p>
+    </div>
+{% endblock %}
