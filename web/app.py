@@ -16,7 +16,7 @@ from config_reader import read_config
 from datastore import get_price_summary, get_price_history
 from scheduler import get_jobs, run_now, init_jobs
 
-APP_VERSION = '1.0'
+APP_VERSION = '1.1'
 
 def webapp():
 
