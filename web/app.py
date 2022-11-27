@@ -16,12 +16,12 @@ from config_reader import read_config
 from datastore import get_price_summary, get_price_history
 from scheduler import get_jobs, run_now, init_jobs
 
-APP_VERSION = '1.0'
 
 def webapp():
 
-    app = Flask(__name__)
+    APP_VERSION = '1.0'
 
+    app = Flask(__name__)
 
     @app.route("/")
     def home():
