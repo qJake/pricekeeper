@@ -84,6 +84,29 @@
 {% block body %}
 
         <h3>Graph for: {{ context.name }}</h3>
+        <div class="row mt-2 mb-2">
+            <div class="col text-center">
+                <h4>
+                    <span class="badge text-bg-primary">
+                        <i class="fas fa-dollar-sign fa-fw"></i> Current: {{ "$%.2f" | format(context.current) }}
+                    </span>
+                </h4>
+            </div>
+            <div class="col text-center">
+                <h4>
+                    <span class="badge text-bg-success">
+                        <i class="fas fa-arrow-trend-down fa-fw"></i> Low: {{ "$%.2f" | format(context.low) }}
+                    </span>
+                </h4>
+            </div>
+            <div class="col text-center">
+                <h4>
+                    <span class="badge text-bg-danger">
+                        <i class="fas fa-arrow-trend-up fa-fw"></i> High: {{ "$%.2f" | format(context.high) }}
+                    </span>
+                </h4>
+            </div>
+        </div>
         <div class="chart-container">
             <canvas id="price-chart"></canvas>
         </div>

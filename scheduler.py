@@ -20,11 +20,14 @@ scheduler = BackgroundScheduler()
 
 
 def init_jobs(config: SimpleNamespace):
+    global scheduler
     
     if scheduler.state == STATE_RUNNING:
         scheduler.shutdown(wait=True)
         
     scheduler.remove_all_jobs()
+
+    scheduler = BackgroundScheduler()
 
     for i, r in enumerate(config.rules):
         # Set cron

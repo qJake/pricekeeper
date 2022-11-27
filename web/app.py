@@ -16,7 +16,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-APP_VERSION = '1.3'
+APP_VERSION = '1.4'
 
 
 def webapp():
@@ -48,8 +48,20 @@ def webapp():
         config, vm = get_vm(name)
         prices = get_price_history(config, name)
 
+        if len(prices):
+            low = min(p['y'] for p in prices)
+            high = max(p['y'] for p in prices)
+            current = sorted((p for p in prices), key=lambda d: d['x'], reverse=True)[0]['y']
+        else:
+            low = 0.0
+            high = 0.0
+            current = 0.0
+
         vm = vm | {
-            'priceJson': json.dumps(prices)
+            'priceJson': json.dumps(prices),
+            'low': low,
+            'high': high,
+            'current': current
         }
         return render_template("graph.html", context=vm)
 
