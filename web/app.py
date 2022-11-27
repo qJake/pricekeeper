@@ -16,7 +16,7 @@ from config_reader import read_config
 from datastore import get_price_summary, get_price_history
 from scheduler import get_jobs, run_now, init_jobs
 
-APP_VERSION = '1.1'
+APP_VERSION = '1.2'
 
 def webapp():
 
@@ -77,6 +77,10 @@ def webapp():
         else:
             message = None
         return render_template("error.html", context={'message': message})
+
+    @app.route("/_health")
+    def healthCheck():
+        return render_template("_health.html")
 
 
     def get_vm(name: str = None) -> Tuple[SimpleNamespace, dict]:

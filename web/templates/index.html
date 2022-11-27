@@ -9,7 +9,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for r in context.prices %}
+                {% for r in context.prices | sort(attribute='name') %}
                     <tr>
                         <td>{{ "$%.2f" | format(r.price) }}</td>
                         <td>{{ r.name }}</td>
