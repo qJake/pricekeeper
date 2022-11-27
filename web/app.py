@@ -12,9 +12,10 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
+from main import APP_VERSION
 from config_reader import read_config
 from datastore import get_price_summary, get_price_history
-from scheduler import get_jobs, run_now
+from scheduler import get_jobs, run_now, init_jobs
 
 def webapp():
 
@@ -53,6 +54,12 @@ def webapp():
         run_now()
         return redirect("/")
 
+    @app.route("/reload")
+    def reload():
+        config = read_config()
+        init_jobs(config)
+        return redirect("/")
+
     @app.route("/jobs")
     def jobs():
         config, vm = get_vm()
@@ -78,7 +85,8 @@ def webapp():
             'config': config,
             'categories': list(set(r.category for r in config.rules)),
             'name': name,
-            'activeCategory': next((r.category for r in config.rules if name is not None and r.name == name), None)
+            'activeCategory': next((r.category for r in config.rules if name is not None and r.name == name), None),
+            'appVersion': APP_VERSION
         }
 
     return app

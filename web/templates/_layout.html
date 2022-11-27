@@ -22,6 +22,9 @@
                     <li class="nav-item">
                         <a class="text-bg-dark nav-link" href="/refresh">Refresh Now</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="text-bg-dark nav-link" href="/reload">Reload Config</a>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -37,6 +40,9 @@
 
                 <div class="{{ leftClass }}">
                     {% include "_nav.html" %}
+                    <div class="mt-4 mb-4 text-center">
+                        <small>PriceKeeper - v{{ context.appVersion }}</small>
+                    </div>
                 </div>
                 <div class="{{ rightClass }}">
                     {% block body required %}{% endblock %}

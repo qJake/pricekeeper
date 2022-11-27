@@ -4,7 +4,14 @@ import time
 from config_reader import read_config
 from web.app import webapp
 
+APP_VERSION = '1.0'
+
+
 def main():
+    print('')
+    print(f'=== PriceKeeper [v{APP_VERSION}] ===')
+    print('')
+
     print('Reading config...')
     cfg = read_config()
 
@@ -13,10 +20,6 @@ def main():
 
     print('Running...')
     webapp().run("0.0.0.0", 9600, debug=False)
-
-    # Not needed since the webserver spins itself
-    # while True:
-    #     time.sleep(60)
 
 
 if __name__ == '__main__':
