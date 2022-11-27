@@ -2,7 +2,7 @@ import scheduler
 import time
 
 from config_reader import read_config
-from web.app import webapp
+from web.app import webapp, APP_VERSION
 
 
 def main():
