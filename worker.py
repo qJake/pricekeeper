@@ -61,24 +61,22 @@ def fetch_price(rule: SimpleNamespace, config: SimpleNamespace, idx: int):
             if type(rule.selector) is str:
                 match = bs.select_one(rule.selector)
                 if match is not None:
-                    rawPrice = match.get_text()
-                    price = re.sub(r"[^0-9.]", "", rawPrice)
+                    price = sanitize_price(match.get_text())
             elif type(rule.selector) is list:
                 for expr in rule.selector:
                     match = bs.select_one(expr)
                     if match is not None:
-                        rawPrice = match.get_text()
-                        price = re.sub(r"[^0-9.]", "", rawPrice)
+                        price = sanitize_price(match.get_text())
         elif hasattr(rule, 'regex'):
             if type(rule.regex) is str:
                 match = re.search(rule.regex, content)
                 if match is not None:
-                    price = match.group(1)
+                    price = sanitize_price(match.group(1))
             elif type(rule.regex) is list:
                 for r in rule.regex:
                     match = re.search(r, content)
                     if match is not None:
-                        price = match.group(1)
+                        price = sanitize_price(match.group(1))
 
         if price is None:
             print(f"[{idx}] No price found.")
@@ -93,3 +91,6 @@ def fetch_price(rule: SimpleNamespace, config: SimpleNamespace, idx: int):
 
     except Exception as ex:
         print(f"[{idx}] ERROR while processing: {ex}")
+
+def sanitize_price(rawPrice: str) -> float:
+    return float(re.sub(r"[^0-9.]", "", rawPrice))
