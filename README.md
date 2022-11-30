@@ -119,6 +119,7 @@ services:
 | -- | -- | --| -- | -- |
 | `name` | string | ✅ | | A distinct name for this rule. Do not include any special (URL-unsafe) characters. |
 | `category` | string | ✅ | ✅ | A category to file this rule under, for visually grouping rules. Rules with the exact same category name are displayed together. (e.g. "Amazon" or "Google") |
+| `url` | string | ✅ | ✅ | The URL to fetch that contains the price. The price must be in the source/response body of the page (dynamic prices rendered via JS will not work or will require a different/creative solution). Doesn't have to be HTML - you can fetch a public API endpoint too.
 | `hours` | string | ✅ | ✅ | A cron-like expression for which hours to run the price fetch job. (e.g. `'*'` or `'9,12,15'` or `'*/3'`)
 | `mins` | string | | ✅ | A cron-like expression for which minutes to run the price fetch job. Defaults to `'0'`.
 | `selector` | string \| array[string] | ✅ (or `regex`) | ✅ | One or more CSS selectors to look for a price value inside. The text value of all of the matched elements is taken as a single string, and a decimal value is extracted from the text. If multiple selectors are specified, they are executed from top to bottom until a price is found.
