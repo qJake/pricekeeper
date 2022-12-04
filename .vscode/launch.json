@@ -11,6 +11,10 @@
             "program": "${workspaceFolder}\\main.py",
             "cwd": "${workspaceFolder}",
             "args": [],
+            "env": {
+                "FLASK_DEBUG": "1",
+                "PKAPP_DEBUG": "1"
+            },
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -20,7 +24,8 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_DEBUG": "1"
+                "FLASK_DEBUG": "1",
+                "PKAPP_DEBUG": "1"
             },
             "args": [
                 "run",

@@ -1,0 +1,83 @@
+{% extends "_layout.html" %}
+
+{% block head %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+    <style type="text/css">
+        #codeeditor {
+            width: 100%;
+            height: 70vh;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 13px;
+        }
+    </style>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.min.js" integrity="sha512-U8J/s+8o7pOrcrcLbdTJckhlNCua8p8E2yJYiNPwrhYiwt6+l1K5MVpMGXXUjT5vgJRGFJOY9mGAHfFSC551VA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/mode-yaml.min.js" integrity="sha512-WcvQVyf7ECu3mkQRpaJJ2l05xJAIlFM1bscCbwduQBztxzoGUWqkAawsMdLr6tkD9ke4V6soIh6aufeAuW1ruw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/worker-yaml.min.js" integrity="sha512-3uAdHtL2/tsdK3FjUOV/zAWO4cfGB6ixvUiXl1yU1t+eBP6EEr1KqABsOHcEPnMbEH32Zafz5vcDNuC5FCQ+Jg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ext-searchbox.min.js" integrity="sha512-RjWHxvDlXm3I4xLhSj4MeIwRmHDaZr2p6rXhxTgaPEeoUmTtWmgL1c3pIp1iceLnsk95xF5DJw9LvFmwNY2i/Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ext-whitespace.min.js" integrity="sha512-L8DnrN/9xeOVTDlIb50+rDPaJmFNVZZiKtzCS8wLVBlZpOok+C2vJywi3pTn14tPhjA/5xXUB1UonCBzQnEL7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/theme-tomorrow_night_eighties.min.js" integrity="sha512-9RaO0WwYYilenKYvJ5XKGb/zfzkcabBwl3F0/plI/5HWqftyUDU56Jxd4UhEjjFieE2L5ZtI3bI7dZp9iDiMdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        const editor = ace.edit('codeeditor', {
+            mode: 'ace/mode/yaml',
+            theme: 'ace/theme/tomorrow_night_eighties',
+            useWorker: false,
+            tabSize: 2,
+            useSoftTabs: true
+        });
+
+        function updateCodeValue(newCode)
+        {
+            document.querySelector('input[name=newRules]').value = newCode;
+        }
+
+        editor.session.on('change', function(_) {
+            updateCodeValue(editor.getValue());
+        });
+        updateCodeValue(editor.getValue());
+    </script>
+{% endblock %}
+
+{% block body %}
+    <h2>Edit Rules</h2>
+
+    {% if context.success %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle fa-lg fa-fw"></i>
+        <b>Success!</b> Rules have been updated.
+    </div>
+    {% endif %}
+
+    {% if context.error %}
+    <div class="alert alert-danger">
+        <i class="fas fa-times-circle fa-lg fa-fw"></i>
+        <b>Uh-oh!</b> An error occurred while saving rules. Check the container logs for detailed info.
+    </div>
+    {% endif %}
+
+    <form method="post" action="/editrules/save">
+        <input type="hidden" name="newRules" value="" />
+        <div class="col-12">
+            <p>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save fa-fw"></i>
+                    Save Config
+                </button>
+            </p>
+        </div>
+        <div class="row">
+            <div class="col-8 codeeditor-container">
+                <div id="codeeditor">{{ context.rules }}</div>
+            </div>
+
+            <div class="col-4">
+                <h3>Available Templates:</h3>
+                <pre>{{ context.templates }}</pre>
+            </div>
+        </div>
+    </form>
+{% endblock %}

@@ -1,14 +1,15 @@
-from scheduler import get_jobs, run_now, init_jobs
-from datastore import get_price_summary, get_price_history
-from config_reader import read_config
 import json
 import os
 import sys
 import inspect
-
 from types import SimpleNamespace
 from typing import Tuple
 from flask import Flask, render_template, request, redirect
+
+from scheduler import get_jobs, run_now, init_jobs
+from datastore import get_price_summary, get_price_history
+import config_reader as store
+
 
 # Parent directory pull
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -16,7 +17,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-APP_VERSION = '1.8'
+APP_VERSION = '1.9'
 
 
 def webapp():
@@ -26,6 +27,16 @@ def webapp():
     import logging
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
+
+    def get_vm(name: str = None) -> Tuple[SimpleNamespace, dict]:
+        config = store.read_config()
+        return config, {
+            'config': config,
+            'categories': list(set(r.category for r in config.rules)),
+            'name': name,
+            'activeCategory': next((r.category for r in config.rules if name is not None and r.name == name), None),
+            'appVersion': APP_VERSION
+        }
 
     @app.route("/")
     def home():
@@ -75,10 +86,38 @@ def webapp():
     @app.route("/reload")
     def reload():
         print('Reloading config...')
-        config = read_config()
+        config = store.read_config()
         init_jobs(config)
         print(f'Reloaded {len(config.rules)} rule(s).')
         return redirect("/")
+
+    @app.route("/editrules")
+    def editrules():
+        _, vm = get_vm()
+        vm = vm | {
+            'rules': store.get_yaml_rules(),
+            'templates': store.get_yaml_templates(),
+            'success': b'success=1' in request.query_string,
+            'error': b'error=1' in request.query_string
+        }
+        return render_template("editrules.html", context=vm)
+
+    @app.route("/editrules/save", methods=['POST'])
+    def saverules():
+        new_rules = store.yaml_to_dict(request.form['newRules'])
+        config = store.read_config_dict(True)
+        config['rules'] = new_rules
+        try:
+            store.write_config_dict(config)
+        except store.ConfigValidationException as cfg_err:
+            print(f"Error validating config:")
+            for e in cfg_err.errors:
+                print(f"  {e}")
+            return redirect("/editrules?error=1")
+
+        new_config = store.read_config()
+        init_jobs(new_config)
+        return redirect("/editrules?success=1")
 
     @app.route("/jobs")
     def jobs():
@@ -101,15 +140,5 @@ def webapp():
     @app.route("/_health")
     def healthCheck():
         return render_template("_health.html")
-
-    def get_vm(name: str = None) -> Tuple[SimpleNamespace, dict]:
-        config = read_config()
-        return config, {
-            'config': config,
-            'categories': list(set(r.category for r in config.rules)),
-            'name': name,
-            'activeCategory': next((r.category for r in config.rules if name is not None and r.name == name), None),
-            'appVersion': APP_VERSION
-        }
 
     return app

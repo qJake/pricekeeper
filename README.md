@@ -53,12 +53,13 @@ For a complete list of configuration options, see below.
 
 ## Run with Docker
 
-| Item       | Description                |
-| ---------- | -------------------------- |
-| Image Name | `qjake/pricekeeper:latest` |
-| Port(s)    | `9600`                     |
-| Mount(s)   | `/app/config.yaml`         |
-| Volume(s)  | *None*                     |
+| Item             | Description                                     |
+| ---------------- | ----------------------------------------------- |
+| Image Name       | `qjake/pricekeeper:latest`                      |
+| Port(s)          | `9600`                                          |
+| Mount(s)         | `/app/config.yaml`                              |
+| Volume(s)        | *None*                                          |
+| Environment Vars | `PKAPP_PORT` (sets port number, default=`9600`)<br />`PKAPP_LISTEN` (sets listen addr, default=`0.0.0.0`) |
 
 ### Example
 

@@ -1,3 +1,4 @@
+import os
 import scheduler
 import time
 
@@ -16,8 +17,31 @@ def main():
     print('Scheduling jobs...')
     scheduler.init_jobs(cfg)
 
-    print('Running...')
-    webapp().run("0.0.0.0", 9600, debug=False)
+    port = 9600
+    if os.getenv('PKAPP_PORT') is not None:
+        tmp_port = os.getenv('PKAPP_PORT')
+        try:
+            tmp_port = int(tmp_port)
+            if tmp_port < 1 or tmp_port > 65535:
+                raise Exception('Port out of range.')
+            port = tmp_port
+        except:
+            print(f"Warning: specified port number in environment variables ({tmp_port}) is not a valid port number.")
+
+    listen_addr = '0.0.0.0'
+    if os.getenv('PKAPP_LISTEN') is not None:
+        tmp_listen = os.getenv('PKAPP_LISTEN')
+        if len(tmp_listen) and (tmp_listen.count('.') == 3 or tmp_listen.count(':') >= 2):
+            listen_addr = tmp_listen.strip()
+
+    debug_flag = False
+    if os.getenv('PKAPP_DEBUG') is not None:
+        tmp_debug = os.getenv('PKAPP_DEBUG')
+        if len(tmp_debug) and (tmp_debug.lower().strip() == 'true' or tmp_debug.lower().strip() == '1'):
+            debug_flag = True
+
+    print(f"Running on: http://{('127.0.0.1' if listen_addr == '0.0.0.0' else listen_addr)}:{port}")
+    webapp().run(listen_addr, port, debug=debug_flag)
 
 
 if __name__ == '__main__':
