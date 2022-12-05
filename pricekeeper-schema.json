@@ -79,11 +79,11 @@
                     "empty": false
                 },
                 "regex": {
-                    "type": "string",
+                    "type": ["string", "list"],
                     "required": false
                 },
                 "selector": {
-                    "type": "string",
+                    "type": ["string", "list"],
                     "required": false
                 }
             }
@@ -124,11 +124,11 @@
                     "required": false
                 },
                 "regex": {
-                    "type": "string",
+                    "type": ["string", "list"],
                     "required": false
                 },
                 "selector": {
-                    "type": "string",
+                    "type": ["string", "list"],
                     "required": false
                 }
             }
