@@ -30,11 +30,13 @@ def webapp():
 
     def get_vm(name: str = None) -> Tuple[SimpleNamespace, dict]:
         config = store.read_config()
+        
+        name_to_category = {r.name: r.category for r in config.rules}
         return config, {
             'config': config,
             'categories': list(set(r.category for r in config.rules)),
             'name': name,
-            'activeCategory': next((r.category for r in config.rules if name is not None and r.name == name), None),
+            'activeCategory': name_to_category.get(name, None),
             'appVersion': APP_VERSION
         }
 
@@ -56,9 +58,13 @@ def webapp():
             return redirect('/error?m=Missing required parameter: name')
         name = request.args.to_dict()['name']
 
+        # Get the view model
         config, vm = get_vm(name)
+
+        # Get price history
         prices = get_price_history(config, name)
 
+        # Get min/max/current
         if len(prices):
             low = min(p['y'] for p in prices)
             high = max(p['y'] for p in prices)

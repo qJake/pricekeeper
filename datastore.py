@@ -39,6 +39,27 @@ def get_price_history(config: SimpleNamespace, name: str) -> list[dict]:
         })
     return prices
 
+# def get_adjacent_rows(config: SimpleNamespace, name: str, rowKey: int):
+#     priceTbl = init_table(config)
+    
+#     # Query the table to find the next highest and next lowest row keys
+#     query = f"PartitionKey eq @partitionKey and RowKey ge @rowKey"
+#     results = priceTbl.query_entities(query, parameters={'partitionKey': name, 'rowKey': rowKey}, select='RowKey')
+
+#     # Get the row keys from the query results
+#     row_keys = [r.RowKey for r in results['items']]
+
+#     # Find the next highest and next lowest row keys
+#     next_highest = None
+#     next_lowest = None
+#     for key in row_keys:
+#         if key > rowKey and (next_highest is None or key < next_highest):
+#             next_highest = key
+#         elif key < rowKey and (next_lowest is None or key > next_lowest):
+#             next_lowest = key
+
+#     return next_highest, next_lowest
+
 def init_table(config: SimpleNamespace):
     creds = AzureNamedKeyCredential(config.storage.account, config.storage.key)
     tblService = TableServiceClient(endpoint=f"https://{config.storage.account}.table.core.windows.net/", credential=creds)
