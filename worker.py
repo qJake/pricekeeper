@@ -108,8 +108,8 @@ def fetch_price(rule: SimpleNamespace, config: SimpleNamespace, idx: int):
                 color = 'limegreen'
             else: # equal
                 color = 'gold'
-        b64spark = get_b64_linegraph(x, y, color)
-        store_sparkline(config, rule.name, b64spark)
+            b64spark = get_b64_linegraph(x, y, color)
+            store_sparkline(config, rule.name, b64spark)
 
     except Exception as ex:
         print(f"[{idx}] ERROR while sparklining: {ex}")

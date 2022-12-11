@@ -80,14 +80,16 @@ def get_price_history(config: SimpleNamespace, name: str) -> list[dict]:
         })
     return prices
 
-def get_recent_prices(config: SimpleNamespace, name: str, hours: int=48) -> tuple[int, int]:
+def get_recent_prices(config: SimpleNamespace, name: str, hours: int=72) -> tuple[int, int]:
     priceTbl = init_table_price(config)
     rows = priceTbl.query_entities(f"PartitionKey eq @name and RowKey le @rk", parameters={'name': name, 'rk': str(convert_date_rowkey(datetime.utcnow() - timedelta(hours=hours)))})
     x = []
     y = []
+    i = 1
     for r in rows:
-        x.append(convert_timestamp(r))
+        x.append(i)
         y.append(r['Price'])
+        i += 1
     return (x, y)
 
 def add_log_entry(config: SimpleNamespace, cat: str, msg: str, stack: str=None):
