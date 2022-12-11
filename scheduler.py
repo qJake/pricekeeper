@@ -62,7 +62,15 @@ def get_jobs() -> list[dict]:
         'delta': (j.next_run_time.replace(tzinfo=timezone.utc) - datetime.now().replace(tzinfo=timezone.utc))
     } for j in jobs)
 
-def run_now():
+def run(name: str):
+    jobs: list[Job] = scheduler.get_jobs()
+
+    for j in jobs:
+        if (j.name == name):
+            j.modify(next_run_time=datetime.now())
+
+
+def run_all():
     jobs: list[Job] = scheduler.get_jobs()
 
     for j in jobs:

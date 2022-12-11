@@ -1,17 +1,18 @@
 import re
+import random
 from datastore import get_recent_prices, store_price, store_sparkline, add_log_entry, LogCategory
 from requests import request
 from types import SimpleNamespace
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-from utils import get_stacktrace
+from utils import get_stacktrace, randset
 from sparkline import get_b64_linegraph
 
 default_headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    'User-Agent': f"Mozilla/5.0 ({randset('Windows NT 10.0; Win64;', 'PlayStation 4 3.11;', 'PlayStation; PlayStation 5/2.26;', 'Macintosh; Intel Mac OS X 10_11_2;')} x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{randset('101', '102', '103', '104', '105', '106', '107', '108')}.0.0.0 Safari/537.36 SomeBrowser/{random.randrange(100)}.0",
     'Accept': '*/*',
     'Accept-Language': 'en-US,en;q=0.9',
-    'sec-ch-ua': '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+    'sec-ch-ua': '"Not=A?Brand";v="24"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
     'sec-fetch-dest': 'script',

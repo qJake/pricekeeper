@@ -22,9 +22,10 @@
     </div>
 
     <div class="col-8">
-        <table class="table sortable-theme-bootstrap" data-sortable>
+        <table class="table align-middle sortable-theme-bootstrap" data-sortable>
             <thead>
                 <tr>
+                    <th></th>
                     <th>Next Run</th>
                     <th>Name</th>
                 </tr>
@@ -32,6 +33,11 @@
             <tbody>
                 {% for j in context.jobs %}
                     <tr>
+                        <td>
+                            <a href="/refresh?name={{ j.name }}" class="btn btn-sm btn-success" title="Run job for {{ j.name }} now">
+                                <i class="fas fa-play fa-fw"></i>
+                            </a>
+                        </td>
                         <td>
                             {{ j.next.strftime("%b %d, %Y %I:%M:%S %p") }}<br />
                             <small>in {{ (j.delta.seconds / 3600) | round(0, 'floor') | int }} hours,

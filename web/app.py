@@ -10,7 +10,7 @@ from typing import Tuple
 from flask import Flask, render_template, request, redirect, Response
 from PIL import Image
 
-from scheduler import get_jobs, run_now, init_jobs
+from scheduler import get_jobs, run_all, run, init_jobs
 from datastore import get_price_summary, get_price_history, get_log_entries, add_log_entry, LogCategory, get_sparkline, get_sparklines
 import config_reader as store
 from utils import name_cat_mapping, get_datetime_from_rowkey_secs
@@ -22,7 +22,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-APP_VERSION = '1.13'
+APP_VERSION = '1.14'
 
 
 def webapp():
@@ -93,12 +93,20 @@ def webapp():
 
     @app.route("/refresh")
     def refresh():
-        print('Running all jobs now...')
         config = store.read_config()
-        add_log_entry(config, LogCategory.CAT_JOBS, 'User requested all jobs to run. Starting all jobs...')
-        run_now()
-        add_log_entry(config, LogCategory.CAT_JOBS, 'All jobs have completed.')
-        print('Completed.')
+        args = request.args.to_dict()
+        if 'name' in args and len(args['name'].strip()):
+            print(f"Running job {args['name']}...")
+            add_log_entry(config, LogCategory.CAT_JOBS, f"User requested {args['name']} job to run...")
+            run(args['name'])
+            add_log_entry(config, LogCategory.CAT_JOBS, 'Job has been queued.')
+            print('Queued.')
+        else:
+            print('Running all jobs now...')
+            add_log_entry(config, LogCategory.CAT_JOBS, 'User requested all jobs to run. Starting all jobs...')
+            run_all()
+            add_log_entry(config, LogCategory.CAT_JOBS, 'All jobs have been queued.')
+            print('Queued.')
         return redirect("/")
 
     @app.route("/reload")

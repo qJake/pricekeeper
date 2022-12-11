@@ -1,3 +1,4 @@
+import random
 import traceback
 from datetime import datetime, timedelta
 from types import SimpleNamespace
@@ -29,3 +30,7 @@ def get_datetime_from_rowkey_secs(seconds: int, precision: int=10) -> datetime:
 
 def max_datetime() -> datetime:
     return datetime(2999, 12, 31, 0, 0, 0, 0)
+
+
+def randset(*args):
+    return random.choice(args)
