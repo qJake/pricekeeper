@@ -4,7 +4,7 @@ import time
 
 from config_reader import read_config
 from web.app import webapp, APP_VERSION
-
+from datastore import add_log_entry, LogCategory
 
 def main():
     print('')
@@ -40,8 +40,13 @@ def main():
         if len(tmp_debug) and (tmp_debug.lower().strip() == 'true' or tmp_debug.lower().strip() == '1'):
             debug_flag = True
 
+    add_log_entry(cfg, LogCategory.CAT_SYSTEM, f"PriceKeeper v{APP_VERSION} has started (Listen={listen_addr}) (Port={port}){(' (Debug=True)' if debug_flag else '')}")
+
     print(f"Running on: http://{('127.0.0.1' if listen_addr == '0.0.0.0' else listen_addr)}:{port}")
-    webapp().run(listen_addr, port, debug=debug_flag)
+    try:
+        webapp().run(listen_addr, port, debug=debug_flag)
+    except SystemExit as se:
+        add_log_entry(cfg, LogCategory.CAT_SYSTEM, f"PriceKeeper v{APP_VERSION} is shutting down.")
 
 
 if __name__ == '__main__':

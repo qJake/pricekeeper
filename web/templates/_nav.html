@@ -5,8 +5,11 @@
         </button>
         <nav id="cat-{{ cat }}" class="collapse {{ 'show' if context.activeCategory == cat else '' }} list-group">
             {% for rule in context.config.rules | sort(attribute='name') %}{% if rule.category == cat %}
-                <a class="list-group-item{{ ' active' if context.name == rule.name else '' }}" href="/graph?name={{ rule.name }}">
-                    {{ rule.name }}
+                <a class="align-middle list-group-item{{ ' active' if context.name == rule.name else '' }}" href="/graph?name={{ rule.name }}">
+                    {% if context.name != rule.name %}
+                        <img class="float-end" src="/spark.png?name={{ rule.name }}" alt="Sparkline for {{ rule.name }}" />
+                    {% endif %}
+                    <span class="align-middle">{{ rule.name }}</span>
                 </a>
             {% endif %}{% endfor %}
         </nav>

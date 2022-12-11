@@ -2,13 +2,18 @@ import json
 import os
 import sys
 import inspect
+import base64
+
+from io import BytesIO
 from types import SimpleNamespace
 from typing import Tuple
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, Response
+from PIL import Image
 
 from scheduler import get_jobs, run_now, init_jobs
-from datastore import get_price_summary, get_price_history
+from datastore import get_price_summary, get_price_history, get_log_entries, add_log_entry, LogCategory, get_sparkline, get_sparklines
 import config_reader as store
+from utils import name_cat_mapping, get_datetime_from_rowkey_secs
 
 
 # Parent directory pull
@@ -17,7 +22,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-APP_VERSION = '1.10'
+APP_VERSION = '1.11'
 
 
 def webapp():
@@ -30,8 +35,8 @@ def webapp():
 
     def get_vm(name: str = None) -> Tuple[SimpleNamespace, dict]:
         config = store.read_config()
-        
-        name_to_category = {r.name: r.category for r in config.rules}
+        name_to_category = name_cat_mapping(config)
+
         return config, {
             'config': config,
             'categories': list(set(r.category for r in config.rules)),
@@ -43,10 +48,14 @@ def webapp():
     @app.route("/")
     def home():
         config, vm = get_vm()
-        itemSummary = get_price_summary(config, (r.name for r in config.rules))
+        itemSummary = get_price_summary(config, list(set(r.name for r in config.rules)))
+        sparks = get_sparklines(config)
+        sparks = sparks if sparks is not None else {}
 
         vm = vm | {
             'prices': itemSummary,
+            'headers': list(set(i['category'] for i in itemSummary)),
+            'sparks': sparks,
             'nav': 'home'
         }
         return render_template("index.html", context=vm)
@@ -85,7 +94,10 @@ def webapp():
     @app.route("/refresh")
     def refresh():
         print('Running all jobs now...')
+        config = store.read_config()
+        add_log_entry(config, LogCategory.CAT_JOBS, 'User requested all jobs to run. Starting all jobs...')
         run_now()
+        add_log_entry(config, LogCategory.CAT_JOBS, 'All jobs have completed.')
         print('Completed.')
         return redirect("/")
 
@@ -94,6 +106,7 @@ def webapp():
         print('Reloading config...')
         config = store.read_config()
         init_jobs(config)
+        add_log_entry(config, LogCategory.CAT_SYSTEM, 'User requested a configuration reload.')
         print(f'Reloaded {len(config.rules)} rule(s).')
         return redirect("/")
 
@@ -143,8 +156,53 @@ def webapp():
             message = None
         return render_template("error.html", context={'message': message})
 
+    @app.route("/logs")
+    def logs():
+        config, vm = get_vm()
+        args = request.args.to_dict()
+        if 'n' in args:
+            logs = get_log_entries(config, int(args['n']))
+        else:
+            logs = get_log_entries(config)
+
+        log_list = []        
+        for l in logs:
+            l['DateTime'] = get_datetime_from_rowkey_secs(int(l['RowKey']))
+            log_list.append(l)
+        
+        vm = vm | {
+            'logs': log_list,
+            'nav': 'logs'
+        }
+        return render_template("logs.html", context=vm)
+
+
     @app.route("/_health")
     def healthCheck():
         return render_template("_health.html")
+
+    @app.route('/spark.png')
+    def sparkline():
+        config = store.read_config()
+        args = request.args.to_dict()
+        if 'name' in args:
+            spark = get_sparkline(config, args['name'])
+            if spark is not None:
+                return Response(base64.b64decode(spark), mimetype='image/png')
+            return empty_png()
+        else:
+            return empty_png()
+        
+    def empty_png():
+        # Create a 1x1 transparent image
+        img = Image.new('RGBA', (1, 1), (255, 255, 255, 0))
+
+        # Save the image to a buffer
+        buf = BytesIO()
+        img.save(buf, format='png')
+        buf.seek(0)
+
+        # Return the image as a response
+        return Response(buf.read(), mimetype='image/png')
 
     return app

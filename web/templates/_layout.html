@@ -39,6 +39,11 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a href="/logs" class="text-bg-dark nav-link{{ ' active' if context.nav == 'logs' else '' }}">
+                            System Log
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -48,8 +53,8 @@
                 {% set rightClass = "col-9" %}
 
                 {% if nonav %}
-                {% set leftClass = "d-none" %}
-                {% set rightClass = "col" %}
+                    {% set leftClass = "d-none" %}
+                    {% set rightClass = "col" %}
                 {% endif %}
 
                 <div class="{{ leftClass }}">

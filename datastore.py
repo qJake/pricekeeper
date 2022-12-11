@@ -1,36 +1,77 @@
-from datetime import datetime
 import re
+from datetime import datetime, timedelta
 from types import SimpleNamespace
 from azure.data.tables import TableServiceClient, TableEntity
 from azure.core.credentials import AzureNamedKeyCredential
+from utils import get_rowkey_datestamp, convert_date_rowkey
 
 
-def store_price(price: float, name: str, config: SimpleNamespace):
+MAX_RESULTS = 1000
+
+class LogCategory:
+    CAT_REQUESTS = 'Requests'
+    CAT_SPARKLINES = 'Sparklines'
+    CAT_JOBS = 'Jobs'
+    CAT_PRUNING = 'Pruning'
+    CAT_SYSTEM = 'System'
+
+def store_price(price: float, name: str, cat: str, config: SimpleNamespace):
     if hasattr(config, 'storage'):
         if hasattr(config.storage, 'type') and config.storage.type == 'azure':
-            priceTbl = init_table(config)
+            priceTbl = init_table_price(config)
             priceTbl.create_entity({
                 'PartitionKey': name,
-                'RowKey': str(int((datetime(2999, 12, 31, 0, 0, 0, 0) - datetime.utcnow()).total_seconds() * 10)),
+                'RowKey': str(get_rowkey_datestamp()),
                 'Price': price
             })
 
+            currTbl = init_table_current(config)
+            currTbl.upsert_entity({
+                'PartitionKey': 'current',
+                'RowKey': name,
+                'Price': price,
+                'Category': cat
+            })
+
+def store_sparkline(config: SimpleNamespace, name: str, spark: str):
+    sparkTbl = init_table_sparklines(config)
+    sparkTbl.upsert_entity({
+        'PartitionKey': 'current',
+        'RowKey': name,
+        'SparkImage': spark
+    })
+
+def get_sparklines(config: SimpleNamespace) -> dict:
+    sparkTbl = init_table_sparklines(config)
+    sparks = sparkTbl.list_entities(results_per_page=MAX_RESULTS)
+    sparkDict = {}
+    for s in next(sparks.by_page()):
+        sparkDict[s['RowKey']] = s['SparkImage'].decode('utf8')
+    return sparkDict
+
+def get_sparkline(config: SimpleNamespace, name: str) -> str:
+    sparkTbl = init_table_sparklines(config)
+    spark = sparkTbl.get_entity('current', name)
+    return spark['SparkImage'] if 'SparkImage' in spark else None
+
 def get_price_summary(config: SimpleNamespace, names: list) -> list[dict]:
     items = []
-    priceTbl = init_table(config)
-    for n in names:
-        pr = priceTbl.query_entities(f"PartitionKey eq @name", parameters={'name': n})
-        for row in pr:
+    currTbl = init_table_current(config)
+
+    pr = currTbl.list_entities(results_per_page=MAX_RESULTS)
+    for row in next(pr.by_page()):
+        if row['RowKey'] in names:
             items.append({
-                'name': n,
-                'price': row['Price']
+                'name': row['RowKey'],
+                'price': row['Price'],
+                'category': row['Category']
             })
-            break
+
     return items
 
 def get_price_history(config: SimpleNamespace, name: str) -> list[dict]:
     prices = []
-    priceTbl = init_table(config)
+    priceTbl = init_table_price(config)
     rows = priceTbl.query_entities(f"PartitionKey eq @name", parameters={'name': name})
     for r in rows:
         prices.append({
@@ -38,6 +79,30 @@ def get_price_history(config: SimpleNamespace, name: str) -> list[dict]:
             'x': convert_timestamp(r)
         })
     return prices
+
+def get_recent_prices(config: SimpleNamespace, name: str, hours: int=48) -> tuple[int, int]:
+    priceTbl = init_table_price(config)
+    rows = priceTbl.query_entities(f"PartitionKey eq @name and RowKey le @rk", parameters={'name': name, 'rk': str(convert_date_rowkey(datetime.utcnow() - timedelta(hours=hours)))})
+    x = []
+    y = []
+    for r in rows:
+        x.append(convert_timestamp(r))
+        y.append(r['Price'])
+    return (x, y)
+
+def add_log_entry(config: SimpleNamespace, cat: str, msg: str, stack: str=None):
+    logTbl = init_table_log(config)
+    logTbl.create_entity({
+        'PartitionKey': cat,
+        'RowKey': str(get_rowkey_datestamp()),
+        'Message': msg,
+        'Stack': stack
+    })
+
+def get_log_entries(config: SimpleNamespace, count: int = MAX_RESULTS) -> list[dict]:
+    logTbl = init_table_log(config)
+    return next(logTbl.list_entities(results_per_page=count).by_page())
+    
 
 # def get_adjacent_rows(config: SimpleNamespace, name: str, rowKey: int):
 #     priceTbl = init_table(config)
@@ -60,10 +125,42 @@ def get_price_history(config: SimpleNamespace, name: str) -> list[dict]:
 
 #     return next_highest, next_lowest
 
-def init_table(config: SimpleNamespace):
+
+def init_table_price(config: SimpleNamespace):
     creds = AzureNamedKeyCredential(config.storage.account, config.storage.key)
     tblService = TableServiceClient(endpoint=f"https://{config.storage.account}.table.core.windows.net/", credential=creds)
-    return tblService.create_table_if_not_exists(config.storage.table)
+    tblName = tblname_prices(config.storage.table if hasattr(config.storage, 'table') else None)
+    return tblService.create_table_if_not_exists(tblName)
+
+def init_table_current(config: SimpleNamespace):
+    creds = AzureNamedKeyCredential(config.storage.account, config.storage.key)
+    tblService = TableServiceClient(endpoint=f"https://{config.storage.account}.table.core.windows.net/", credential=creds)
+    tblName = tblname_current(config.storage.table if hasattr(config.storage, 'table') else None)
+    return tblService.create_table_if_not_exists(tblName)
+
+def init_table_sparklines(config: SimpleNamespace):
+    creds = AzureNamedKeyCredential(config.storage.account, config.storage.key)
+    tblService = TableServiceClient(endpoint=f"https://{config.storage.account}.table.core.windows.net/", credential=creds)
+    tblName = tblname_sparklines(config.storage.table if hasattr(config.storage, 'table') else None)
+    return tblService.create_table_if_not_exists(tblName)
+
+def init_table_log(config: SimpleNamespace):
+    creds = AzureNamedKeyCredential(config.storage.account, config.storage.key)
+    tblService = TableServiceClient(endpoint=f"https://{config.storage.account}.table.core.windows.net/", credential=creds)
+    tblName = tblname_log(config.storage.table if hasattr(config.storage, 'table') else None)
+    return tblService.create_table_if_not_exists(tblName)
+
+def tblname_prices(base: str):
+    return f"{(base if base is not None else '')}prices"
+
+def tblname_current(base: str):
+    return f"{(base if base is not None else '')}current"
+
+def tblname_sparklines(base: str):
+    return f"{(base if base is not None else '')}sparklines"
+
+def tblname_log(base: str):
+    return f"{(base if base is not None else '')}log"
 
 def convert_timestamp(row: TableEntity) -> str:
     ts = row.metadata['timestamp'].tables_service_value

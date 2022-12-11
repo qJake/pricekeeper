@@ -102,7 +102,7 @@ services:
 | `type` | string | ✅ | `azure` (Currently, only Azure Tables are supported.)
 | `account` | string | ✅  | Azure Storage account name (do not include ".table.core.windows.net") |
 | `key` | string | ✅  | Azure Storage Accout access key (not a SAS, and not the connection string) |
-| `table` | string | ✅  | The name of the table to store prices in. If it does not exist, it will be created automatically. |
+| `table` | string |  | Optionally, the prefix name to give to the tables that are created. See the tables documentation below for more info. |
 
 ### Section: `scheduler`
 
@@ -199,3 +199,22 @@ templates:
       - meta itemprop="lowPrice" content="(.+?)"
       - meta itemprop="price" content="(.+?)"
 ```
+
+## Tables
+
+PriceKeeper creates the following tables:
+
+* `prices` - Used to store historical pricing data
+* `current` - Used to store current pricing data (only for quick retrieval of summary data)
+* `sparklines` - Used to store the generated sparkline images of the price history for the past 48 hours (only one image is kept per rule)
+
+If the optional `config.storage.table` key is present, the tables will be prefixed by this value separated by an underscore. For example, if the configuration is:
+
+```yaml
+config:
+  storage:
+    ...
+    table: myvalue
+```
+
+Then the prices table would be created in Azure as `myvalue_prices` instead of the default `prices`.

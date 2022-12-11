@@ -10,21 +10,35 @@
 
 {% block body %}
 
-    <table class="table sortable-theme-bootstrap" data-sortable>
-        <thead>
-            <tr>
-                <th>Last Price</th>
-                <th>Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for r in context.prices | sort(attribute='name') %}
+    {% for c in context.headers | sort %}
+
+        <h3>{{ c }}</h3>
+
+        <table class="table align-middle sortable-theme-bootstrap" data-sortable>
+            <thead>
                 <tr>
-                    <td>{{ "$%.2f" | format(r.price) }}</td>
-                    <td>{{ r.name }}</td>
+                    <th style="width: 1%; min-width: 120px;">Spark</th>
+                    <th style="width: 1%; min-width: 120px;">Last Price</th>
+                    <th>Name</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for r in context.prices | sort(attribute='name') %}
+                    {% if r.category == c %}
+                        <tr>
+                            <td>
+                                {% if r.name in context.sparks %}
+                                    <img src="data:image/png;base64,{{ context.sparks[r.name] }}" alt="Sparkline for {{ r.name }}" />
+                                {% endif %}
+                            </td>
+                            <td>{{ "$%.2f" | format(r.price) }}</td>
+                            <td><a href="/graph?name={{ r.name }}">{{ r.name }}</a></td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        
+    {% endfor %}
 
 {% endblock %}

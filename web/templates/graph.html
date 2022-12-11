@@ -2,6 +2,36 @@
 
 {% block scripts %}
 <script>
+    const plugin = {
+        id: 'verticalLiner',
+        afterInit: (chart, args, opts) => {
+          chart.verticalLiner = {}
+        },
+        afterEvent: (chart, args, options) => {
+            const {inChartArea} = args
+            chart.verticalLiner = {draw: inChartArea}
+        },
+        beforeTooltipDraw: (chart, args, options) => {
+            const {draw} = chart.verticalLiner
+            if (!draw) return
+    
+            const {ctx} = chart
+            const {top, bottom} = chart.chartArea
+            const {tooltip} = args
+            const x = tooltip?.caretX
+            if (!x) return
+    
+            ctx.save()
+            
+            ctx.beginPath()
+            ctx.moveTo(x, top)
+            ctx.lineTo(x, bottom)
+            ctx.stroke()
+            
+            ctx.restore()
+        }
+    };
+
     var chartData = {{ context.priceJson | safe }};
     new Chart(document.getElementById('price-chart'), {
         type: 'line',
@@ -11,7 +41,11 @@
                     label: 'Price',
                     data: chartData,
                     borderColor: '#00CC00',
-                    fill: '#00CC00'
+                    backgroundColor: '#00CC00',
+                    pointRadius: 2,
+                    pointHoverBackgroundColor: '#22FF22',
+                    pointHoverBorderColor: '#22FF22',
+                    pointHoverRadius: 3
                 }
             ]
         },
@@ -19,7 +53,25 @@
             plugins:{
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    displayColors: false,
+                    xAlign: 'center',
+                    yAlign: 'top',
+                    titleFont: {
+                        size: '16px'
+                    },
+                    bodyFont: {
+                        size: '16px'
+                    },
+                    callbacks: {
+                        label: ti => `$${ti.formattedValue}`
+                    }
                 }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index',
             },
             parsing: {
                 xAxisKey: 'x',
@@ -76,7 +128,26 @@
                     }
                 }
             }
-        }
+        },
+        plugins: [
+            {
+                afterDraw: chart => {
+                    if (chart.tooltip?._active?.length) {
+                        let x = chart.tooltip._active[0].element.x;
+                        let yAxis = chart.scales.y;
+                        let ctx = chart.ctx;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(x, yAxis.top);
+                        ctx.lineTo(x, yAxis.bottom);
+                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = '#777777';
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            }
+        ]
     })
 </script>
 {% endblock %}

@@ -1,0 +1,48 @@
+{% extends "_layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sortable/0.8.0/css/sortable-theme-bootstrap.css" integrity="sha512-ejAo3nK8bdfwg68A9g6QYUdqnTmcGem1OX8AeVwa+dQH2v22vEwPkbZQzltTE+bjXt72iGvglAw0h+Up+fOg0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sortable/0.8.0/js/sortable.min.js" integrity="sha512-DEcSaL0BWApJ//v7ZfqAI04nvK+NQcUVwrrx/l1x7OJgU0Cwbq7e459NBMzLPrm8eLPzAwBtiJJS4AvLZDZ8xA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}
+
+{% block body %}
+
+    <h2>System Log</h2>
+
+    <div class="col-12">
+        <table class="table table-striped table-bordered sortable-theme-bootstrap" data-sortable>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Timestamp</th>
+                    <th>Message</th>
+                    <th>Stack Trace</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in context.logs | sort(attribute='RowKey') %}
+                    <tr>
+                        <td>
+                            {{ log['PartitionKey'] }}
+                        </td>
+                        <td>
+                            {{ log['DateTime'].strftime("%b %d, %Y @ %I:%M:%S %p") }}
+                        </td>
+                        <td>
+                            {{ log['Message'] }}
+                        </td>
+                        <td>
+                            {% if 'Stack' in log %}
+                                {{ log['Stack'] }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

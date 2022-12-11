@@ -1,9 +1,11 @@
 import re
-from datastore import store_price
+from datastore import get_recent_prices, store_price, store_sparkline, add_log_entry, LogCategory
 from requests import request
 from types import SimpleNamespace
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from utils import get_stacktrace
+from sparkline import get_b64_linegraph
 
 default_headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
@@ -24,6 +26,7 @@ def fetch_price(rule: SimpleNamespace, config: SimpleNamespace, idx: int):
     print(f"[{idx}] Fetching: {rule.url}")
     price = None
 
+    ## Fetch the price
     try:
         content = None
         if hasattr(config, 'cache') and rule.url in config.cache.__dict__ and f"{rule.url}__time" in cache:
@@ -48,6 +51,7 @@ def fetch_price(rule: SimpleNamespace, config: SimpleNamespace, idx: int):
 
             if (resp.status_code >= 300):
                 print(f"[{idx}] HTTP error: Status Code {resp.status_code}")
+                add_log_entry(config, LogCategory.CAT_REQUESTS, f"Unsuccessful HTTP status {resp.status_code} for job [{rule.category}] {rule.name}.")
                 return
             
             content = resp.content.decode('utf8')
@@ -80,17 +84,37 @@ def fetch_price(rule: SimpleNamespace, config: SimpleNamespace, idx: int):
 
         if price is None:
             print(f"[{idx}] No price found.")
+            add_log_entry(config, LogCategory.CAT_REQUESTS, f"Warning: No price found on page {rule.url} for [{rule.category}] {rule.name}.")
             return
 
         price = float(price) / 100.0 if hasattr(rule, 'divide') and rule.divide else float(price)
 
-        # TODO: Record price
         print(f"[{idx}] Storing price: {price}")
-        store_price(price, rule.name, config)
+        store_price(price, rule.name, rule.category, config)
         print(f"[{idx}] Done!")
 
     except Exception as ex:
         print(f"[{idx}] ERROR while processing: {ex}")
+        add_log_entry(config, LogCategory.CAT_REQUESTS, f"Unhandled exception [{type(ex).__name__}] while processing request for [{rule.category}] {rule.name}.", get_stacktrace(ex))
+        return
+
+    ## Write Sparkline
+    try:
+        x, y = get_recent_prices(config, rule.name)
+        if (len(y) > 1):
+            if (y[0] < y[-1]):
+                color = 'firebrick'
+            elif (y[0] > y[-1]):
+                color = 'limegreen'
+            else: # equal
+                color = 'gold'
+        b64spark = get_b64_linegraph(x, y, color)
+        store_sparkline(config, rule.name, b64spark)
+
+    except Exception as ex:
+        print(f"[{idx}] ERROR while sparklining: {ex}")
+        add_log_entry(config, LogCategory.CAT_SPARKLINES, f"Unhandled exception [{type(ex).__name__}] while generating sparkline for [{rule.category}] {rule.name}.", get_stacktrace(ex))
+        return
 
 def sanitize_price(rawPrice: str) -> float:
     return float(re.sub(r"[^0-9.]", "", rawPrice))
