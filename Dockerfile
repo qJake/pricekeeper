@@ -3,7 +3,7 @@ FROM python:3.9-alpine
 WORKDIR /app
 
 RUN apk update
-RUN apk add git gcc
+RUN apk add git make automake gcc g++ subversion python3-dev
 RUN git clone https://github.com/qJake/pricekeeper.git
 
 
