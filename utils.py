@@ -12,19 +12,19 @@ def get_stacktrace(ex: Exception) -> str:
     return "".join(traceback.TracebackException.from_exception(ex).format())
 
 
-def get_rowkey_datestamp() -> int:
+def get_rowkey_datestamp(precision=10) -> int:
     """Gets the number of seconds from now until 12/31/2999."""
-    return convert_date_rowkey(datetime.utcnow())
+    return convert_date_rowkey(datetime.utcnow(), precision)
 
 
-def convert_date_rowkey(date: datetime) -> int:
+def convert_date_rowkey(date: datetime, precision=10) -> int:
     """Gets the number of seconds from the specified `date` until 12/31/2999."""
-    return int((max_datetime() - date).total_seconds() * 10)
+    return int((max_datetime() - date).total_seconds() * precision)
 
 
-def get_datetime_from_rowkey_secs(seconds: int) -> datetime:
+def get_datetime_from_rowkey_secs(seconds: int, precision: int=10) -> datetime:
     """Gets a `datetime` object representing the number of seconods until 12/31/2999."""
-    return (max_datetime() - timedelta(seconds=seconds / 10))
+    return (max_datetime() - timedelta(seconds=seconds / precision))
 
 
 def max_datetime() -> datetime:

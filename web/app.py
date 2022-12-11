@@ -167,7 +167,7 @@ def webapp():
 
         log_list = []        
         for l in logs:
-            l['DateTime'] = get_datetime_from_rowkey_secs(int(l['RowKey']))
+            l['DateTime'] = get_datetime_from_rowkey_secs(int(l['RowKey']), 1000)
             log_list.append(l)
         
         vm = vm | {

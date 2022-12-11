@@ -85,18 +85,16 @@ def get_recent_prices(config: SimpleNamespace, name: str, hours: int=72) -> tupl
     rows = priceTbl.query_entities(f"PartitionKey eq @name and RowKey le @rk", parameters={'name': name, 'rk': str(convert_date_rowkey(datetime.utcnow() - timedelta(hours=hours)))})
     x = []
     y = []
-    i = 1
-    for r in rows:
-        x.append(i)
+    for r in sorted(next(rows.by_page()), reverse=True, key=lambda r: r['RowKey']):
+        x.append(r['RowKey'])
         y.append(r['Price'])
-        i += 1
     return (x, y)
 
 def add_log_entry(config: SimpleNamespace, cat: str, msg: str, stack: str=None):
     logTbl = init_table_log(config)
     logTbl.create_entity({
         'PartitionKey': cat,
-        'RowKey': str(get_rowkey_datestamp()),
+        'RowKey': str(get_rowkey_datestamp(1000)),
         'Message': msg,
         'Stack': stack
     })
