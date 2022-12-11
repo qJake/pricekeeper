@@ -13,7 +13,6 @@ storage:
   type: azure
   account: mystorageaccountname
   key: abcde............................67890==
-  table: prices
 
 scheduler:
   spreadtime: 30
@@ -164,7 +163,6 @@ storage:
   type: azure
   account: mystorageaccountname
   key: abcde............................67890==
-  table: prices
 
 scheduler:
   spreadtime: 30
