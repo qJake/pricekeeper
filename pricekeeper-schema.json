@@ -56,6 +56,10 @@
                     "required": true,
                     "empty": false
                 },
+                "cookies": {
+                    "type": "dict",
+                    "required": false
+                },
                 "referer": {
                     "type": "string",
                     "required": false
@@ -101,6 +105,10 @@
             "schema": {
                 "url": {
                     "type": "string",
+                    "required": false
+                },
+                "cookies": {
+                    "type": "dict",
                     "required": false
                 },
                 "referer": {

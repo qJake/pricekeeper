@@ -48,7 +48,10 @@ def fetch_price(rule: SimpleNamespace, config: SimpleNamespace, idx: int):
                     hds['Referer'] = rule.url
                 elif type(rule.referer) is str:
                     hds['Referer'] = rule.referer
-            resp = request('GET', rule.url, headers=default_headers)
+            cookies = {}
+            if hasattr(rule, 'cookies'):
+                cookies = rule.cookies.__dict__
+            resp = request('GET', rule.url, headers=default_headers, cookies=cookies)
 
             if (resp.status_code >= 300):
                 print(f"[{idx}] HTTP error: Status Code {resp.status_code}")
