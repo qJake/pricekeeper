@@ -35,9 +35,7 @@
                             {{ log['Message'] }}
                         </td>
                         <td>
-                            {% if 'Stack' in log %}
-                                {{ log['Stack'] }}
-                            {% endif %}
+                            {% if 'Stack' in log %}<pre>{{ log['Stack'] }}</pre>{% endif %}
                         </td>
                     </tr>
                 {% endfor %}

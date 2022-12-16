@@ -22,7 +22,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-APP_VERSION = '1.15'
+APP_VERSION = '1.16'
 
 
 def webapp():
@@ -137,7 +137,7 @@ def webapp():
         try:
             store.write_config_dict(config)
         except store.ConfigValidationException as cfg_err:
-            add_log_entry(config, LogCategory.CAT_SYSTEM, f"Unable to save rules because one or more validation errors occurred:\r\n{'\r\n'.join(cfg_err.errors)}")
+            add_log_entry(store.read_config(), LogCategory.CAT_SYSTEM, f"Unable to save rules because one or more validation errors occurred.", "\r\n".join(cfg_err.errors))
             print(f"Error validating config:")
             for e in cfg_err.errors:
                 print(f"  {e}")
