@@ -56,7 +56,15 @@
                     "required": true,
                     "empty": false
                 },
+                "link": {
+                    "type": "string",
+                    "required": false
+                },
                 "cookies": {
+                    "type": "dict",
+                    "required": false
+                },
+                "vars": {
                     "type": "dict",
                     "required": false
                 },
@@ -107,7 +115,15 @@
                     "type": "string",
                     "required": false
                 },
+                "link": {
+                    "type": "string",
+                    "required": false
+                },
                 "cookies": {
+                    "type": "dict",
+                    "required": false
+                },
+                "vars": {
                     "type": "dict",
                     "required": false
                 },

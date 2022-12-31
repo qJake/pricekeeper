@@ -154,7 +154,14 @@
 
 {% block body %}
 
-        <h3>Graph for: {{ context.name }}</h3>
+        <h3>
+            Graph for: {{ context.name }}
+            {% if context.rule.link %}
+                <a href="{{ context.rule.link }}" title="Open: {{ context.rule.link }}" target="_blank" rel="nofollow" class="me-2 btn btn-sm btn-outline-info">
+                    <i class="fas fa-fw fa-external-link"></i>
+                </a>
+            {% endif %}
+        </h3>
         <div class="row mt-2 mb-2">
             <div class="col text-center">
                 <h4>

@@ -24,6 +24,7 @@ def read_config_dict(no_templates=False) -> SimpleNamespace:
             cfg: dict = yaml.safe_load(s)
             if not no_templates:
                 cfg = apply_templates(cfg)
+                cfg = apply_vars(cfg)
 
             return cfg
         except Exception as ex:
@@ -40,6 +41,30 @@ def apply_templates(cfg: dict) -> dict:
 
     return cfg
 
+def apply_vars(cfg: dict) -> dict:
+    if 'rules' in cfg:
+        for i, r in enumerate(cfg['rules']):
+            if 'vars' in r and len(r['vars']):
+                vs: dict = r['vars']
+
+                # Performs variable replacement using .format(**dict)
+                # 'regex' and 'selector' have the same configuration structure so do both in the same way
+                # Handles these being either lists or strings
+                for key in ['regex', 'selector']:
+                    if key in r:
+                        if isinstance(r[key], list):
+                            r[key] = [st.format(**vs) for st in r[key]]
+                        elif isinstance(r[key], str):
+                            r[key] = r[key].format(**vs)
+
+                # Replace other vars for which it is only possible that they are strings
+                for key in ['url', 'link', 'referer']:
+                    if key in r and isinstance(r[key], str):
+                        r[key] = r[key].format(**vs)
+
+                cfg['rules'][i] = r
+
+    return cfg
 
 def validate_config(cfg: dict) -> bool:
     cfg = apply_templates(cfg)

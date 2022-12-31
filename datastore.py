@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 from azure.data.tables import TableServiceClient, TableEntity
 from azure.core.credentials import AzureNamedKeyCredential
+from azure.core.exceptions import ResourceNotFoundError
 from utils import get_rowkey_datestamp, convert_date_rowkey
 
 
@@ -50,9 +51,12 @@ def get_sparklines(config: SimpleNamespace) -> dict:
     return sparkDict
 
 def get_sparkline(config: SimpleNamespace, name: str) -> str:
-    sparkTbl = init_table_sparklines(config)
-    spark = sparkTbl.get_entity('current', name)
-    return spark['SparkImage'] if 'SparkImage' in spark else None
+    try:
+        sparkTbl = init_table_sparklines(config)
+        spark = sparkTbl.get_entity('current', name)
+        return spark['SparkImage'] if 'SparkImage' in spark else None
+    except ResourceNotFoundError:
+        return None
 
 def get_price_summary(config: SimpleNamespace, names: list) -> list[dict]:
     items = []
@@ -61,10 +65,12 @@ def get_price_summary(config: SimpleNamespace, names: list) -> list[dict]:
     pr = currTbl.list_entities(results_per_page=MAX_RESULTS)
     for row in next(pr.by_page()):
         if row['RowKey'] in names:
+            cfgRule = next(iter([r for r in config.rules if row['RowKey'] == r.name]), None)
             items.append({
                 'name': row['RowKey'],
                 'price': row['Price'],
-                'category': row['Category']
+                'category': row['Category'],
+                'link': cfgRule.link if hasattr(cfgRule, 'link') else None
             })
 
     return items

@@ -22,7 +22,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-APP_VERSION = '1.17'
+APP_VERSION = '1.18'
 
 
 def webapp():
@@ -69,6 +69,9 @@ def webapp():
 
         # Get the view model
         config, vm = get_vm(name)
+        rule = next(iter([r for r in config.rules if r.name == name]), None)
+
+        # TOOD: If rule is None, then display a 404 or go somewhere else...
 
         # Get price history
         prices = get_price_history(config, name)
@@ -87,7 +90,8 @@ def webapp():
             'priceJson': json.dumps(prices),
             'low': low,
             'high': high,
-            'current': current
+            'current': current,
+            'rule': rule
         }
         return render_template("graph.html", context=vm)
 
