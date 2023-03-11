@@ -13,7 +13,7 @@ ENV DOCKER_APP=True
 WORKDIR /app
 EXPOSE 9600
 
-RUN apk add curl make automake gcc g++ subversion python3-dev
+RUN apk add curl make automake gcc g++ subversion python3-dev tzdata
 
 COPY --from=0 /app/pricekeeper /app
 

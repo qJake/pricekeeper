@@ -40,7 +40,10 @@ def main():
         if len(tmp_debug) and (tmp_debug.lower().strip() == 'true' or tmp_debug.lower().strip() == '1'):
             debug_flag = True
 
-    add_log_entry(cfg, LogCategory.CAT_SYSTEM, f"PriceKeeper v{APP_VERSION} has started (Listen={listen_addr}) (Port={port}){(' (Debug=True)' if debug_flag else '')}")
+    try:
+        add_log_entry(cfg, LogCategory.CAT_SYSTEM, f"PriceKeeper v{APP_VERSION} has started (Listen={listen_addr}) (Port={port}){(' (Debug=True)' if debug_flag else '')}")
+    except Exception as e:
+        print(f"FATAL ERROR: Could not write to Azure Storage Table!\n{e}")
 
     print(f"Running on: http://{('127.0.0.1' if listen_addr == '0.0.0.0' else listen_addr)}:{port}")
     try:
